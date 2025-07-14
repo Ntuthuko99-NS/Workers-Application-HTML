@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Time Tracking System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+
+        /* Dark mode toggle transition */
+        .dark-mode-transition * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark-mode-transition dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with dark mode toggle -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Workers Intel</h1>
+            </div>
+            <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white">
+                <svg id="darkModeIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path id="darkModePath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Login Section -->
+        <section id="loginSection" class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl mb-8 fade-in">
+            <div class="md:flex">
+                <div class="md:flex-shrink-0">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/d575c320-fbf7-4dac-ba68-31dfd66bad12.png" alt="Modern office workspace with standing desks, multiple monitors and glass meeting rooms" class="h-full w-full object-cover md:w-48" />
+                </div>
+                <div class="p-8">
+                    <div class="uppercase tracking-wide text-sm text-indigo-500 dark:text-indigo-400 font-semibold">Employee Login</div>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">Please enter your credentials to clock in or out</p>
+
+                    <form id="loginForm" class="mt-6">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="employeeId">
+                                Employee ID
+                            </label>
+                            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-700 dark:text-white dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline" id="employeeId" type="text" placeholder="Enter your employee ID">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="password">
+                                Password
+                            </label>
+                            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:bg-gray-700 dark:text-white dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="Enter your password">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                                Sign In
+                            </button>
+                            <a class="inline-block align-baseline font-bold text-sm text-blue-500 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300" href="#">
+                                Forgot Password?
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Time Tracking Section (hidden initially) -->
+        <section id="timeTrackingSection" class="hidden max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8 fade-in">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Time Tracking</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Welcome back, <span id="employeeName" class="font-semibold text-blue-600 dark:text-blue-400">John Doe</span></p>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="currentTime" class="text-lg font-mono bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded"></span>
+                    </div>
+                </div>
+
+                <!-- Clock In/Out Button -->
+                <div class="text-center mb-8">
+                    <button id="clockButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform transition hover:scale-105 focus:outline-none focus:shadow-outline">
+                        Clock In
+                    </button>
+                    <p id="lastActionTime" class="mt-2 text-gray-500 dark:text-gray-400">Last action: </p>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="p-2 rounded-full bg-blue-500 text-white mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Hours This Week</p>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white">36.5 <span class="text-sm">hrs</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-100 dark:bg-purple-900 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="p-2 rounded-full bg-purple-500 text-white mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Days Worked</p>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white">5</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-100 dark:bg-green-900 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="p-2 rounded-full bg-green-500 text-white mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Current Status</p>
+                                <p id="currentStatus" class="text-xl font-bold text-gray-800 dark:text-white">Not Clocked In</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Entry History -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Time Entries</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+                            <thead class="bg-gray-100 dark:bg-gray-700">
+                                <tr>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Clock In</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Clock Out</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Hours</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timeEntries" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- Time entries will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employee Details -->
+                <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Your Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Employee ID</p>
+                            <p id="infoEmployeeId" class="font-medium text-gray-800 dark:text-white"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Company</p>
+                            <p id="infoCompany" class="font-medium text-gray-800 dark:text-white"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Department</p>
+                            <p id="infoDepartment" class="font-medium text-gray-800 dark:text-white"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Position</p>
+                            <p id="infoPosition" class="font-medium text-gray-800 dark:text-white"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logout Button -->
+        <div id="logoutSection" class="hidden text-center mt-6">
+            <button id="logoutButton" class="text-red-600 dark:text-red-400 font-medium hover:text-red-800 dark:hover:text-red-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Mock database simulation
+        // In a real app, this would be replaced with API calls to a backend
+        const employeesDatabase = {
+            "EMP1001": {
+                id: "Ntuthuko"
+                    password: "Ntuthuko1100", // In real app, use proper hashing
+                name: "Ntuthuko Sandile",
+                company: "Unirvesity of Johannesburg.",
+                department: "Information Technology",
+                position: "Technician",
+                timeEntries: [
+                    { date: "2023-06-01", clockIn: "08:00", clockOut: "16:30", status: "Completed" },
+                    { date: "2023-06-02", clockIn: "08:15", clockOut: "17:00", status: "Completed" },
+                    { date: "2023-06-05", clockIn: "09:00", clockOut: "17:30", status: "Completed" },
+                    { date: "2023-06-06", clockIn: "08:30", clockOut: "16:45", status: "Completed" },
+                    { date: "2023-06-07", clockIn: "08:10", clockOut: null, status: "Pending" },
+                ]
+                    id: "EMP1001",
+                password: "password123", // In real app, use proper hashing
+                name: "John Doe",
+                company: "Tech Solutions Inc.",
+                department: "Engineering",
+                position: "Senior Developer",
+                timeEntries: [
+                    { date: "2023-06-01", clockIn: "08:00", clockOut: "16:30", status: "Completed" },
+                    { date: "2023-06-02", clockIn: "08:15", clockOut: "17:00", status: "Completed" },
+                    { date: "2023-06-05", clockIn: "09:00", clockOut: "17:30", status: "Completed" },
+                    { date: "2023-06-06", clockIn: "08:30", clockOut: "16:45", status: "Completed" },
+                    { date: "2023-06-07", clockIn: "08:10", clockOut: null, status: "Pending" },
+                ]
+            },
+            "EMP1002": {
+                id: "EMP1002",
+                password: "password456",
+                name: "Alice Smith",
+                company: "Digital Innovations Co.",
+                department: "Design",
+                position: "UI/UX Designer",
+                timeEntries: [
+                    { date: "2023-06-01", clockIn: "08:30", clockOut: "17:00", status: "Completed" },
+                    { date: "2023-06-02", clockIn: "08:45", clockOut: "17:15", status: "Completed" },
+                    { date: "2023-06-05", clockIn: "09:10", clockOut: "17:40", status: "Completed" },
+                    { date: "2023-06-06", clockIn: "08:20", clockOut: "16:50", status: "Completed" },
+                    { date: "2023-06-07", clockIn: "08:05", clockOut: null, status: "Pending" },
+                ]
+            },
+            "EMP1003": {
+                id: "EMP1003",
+                password: "password789",
+                name: "Robert Johnson",
+                company: "Global Services Ltd.",
+                department: "HR",
+                position: "HR Manager",
+                timeEntries: [
+                    { date: "2023-06-01", clockIn: "08:10", clockOut: "16:40", status: "Completed" },
+                    { date: "2023-06-02", clockIn: "08:25", clockOut: "17:10", status: "Completed" },
+                    { date: "2023-06-05", clockIn: "09:05", clockOut: "17:20", status: "Completed" },
+                    { date: "2023-06-06", clockIn: "08:15", clockOut: "16:55", status: "Completed" },
+                    { date: "2023-06-07", clockIn: "08:00", clockOut: null, status: "Pending" },
+                ]
+            }
+        };
+
+        // Current logged in user (would be null when not logged in)
+        let currentUser = null;
+        let isClockedIn = false;
+
+        // DOM elements
+        const loginSection = document.getElementById('loginSection');
+        const timeTrackingSection = document.getElementById('timeTrackingSection');
+        const logoutSection = document.getElementById('logoutSection');
+        const loginForm = document.getElementById('loginForm');
+        const clockButton = document.getElementById('clockButton');
+        const currentStatus = document.getElementById('currentStatus');
+        const currentTimeElement = document.getElementById('currentTime');
+        const lastActionTime = document.getElementById('lastActionTime');
+        const timeEntriesTable = document.getElementById('timeEntries');
+        const logoutButton = document.getElementById('logoutButton');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'enabled' ||
+                (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('darkMode', 'enabled');
+            }
+
+            // Update clock every second
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Event listeners
+            loginForm.addEventListener('submit', handleLogin);
+            clockButton.addEventListener('click', handleClockAction);
+            logoutButton.addEventListener('click', handleLogout);
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Check for session (in a real app, this would be a proper session check with the backend)
+            const sessionUser = sessionStorage.getItem('currentUser');
+            if (sessionUser) {
+                currentUser = JSON.parse(sessionUser);
+                initializeUserSession();
+            }
+        });
+
+        function updateClock() {
+            const now = new Date();
+            currentTimeElement.textContent = now.toLocaleTimeString();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Simple validation
+            if (!employeeId || !password) {
+                alert('Please enter both employee ID and password');
+                return;
+            }
+
+            // Check credentials (in a real app, this would be an API call)
+            if (employeesDatabase[employeeId] && employeesDatabase[employeeId].password === password) {
+                currentUser = employeesDatabase[employeeId];
+
+                // In a real app, you'd store a session token or cookie, not the full user object
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                initializeUserSession();
+            } else {
+                alert('Invalid employee ID or password');
+            }
+        }
+
+        function initializeUserSession() {
+            // Hide login, show time tracking
+            loginSection.classList.add('hidden');
+            timeTrackingSection.classList.remove('hidden');
+            logoutSection.classList.remove('hidden');
+
+            // Update user info
+            document.getElementById('employeeName').textContent = currentUser.name;
+            document.getElementById('infoEmployeeId').textContent = currentUser.id;
+            document.getElementById('infoCompany').textContent = currentUser.company;
+            document.getElementById('infoDepartment').textContent = currentUser.department;
+            document.getElementById('infoPosition').textContent = currentUser.position;
+
+            // Check if user has a pending clock-in (no clock-out)
+            const lastEntry = currentUser.timeEntries[currentUser.timeEntries.length - 1];
+            isClockedIn = lastEntry.clockOut === null;
+
+            updateClockButtonState();
+            updateTimeEntriesTable();
+
+            // Set last action time
+            if (isClockedIn) {
+                lastActionTime.textContent = `Last action: Clocked in at ${lastEntry.date} ${lastEntry.clockIn}`;
+            } else if (currentUser.timeEntries.length > 0) {
+                const mostRecentCompleted = currentUser.timeEntries.find(entry => entry.clockOut !== null);
+                if (mostRecentCompleted) {
+                    lastActionTime.textContent = `Last action: Clocked out at ${mostRecentCompleted.date} ${mostRecentCompleted.clockOut}`;
+                }
+            }
+        }
+
+        function updateClockButtonState() {
+            if (isClockedIn) {
+                clockButton.textContent = 'Clock Out';
+                clockButton.className = 'bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform transition hover:scale-105 focus:outline-none focus:shadow-outline';
+                currentStatus.textContent = 'Clocked In';
+                currentStatus.className = 'text-xl font-bold text-gray-800 dark:text-white text-green-600 dark:text-green-400';
+            } else {
+                clockButton.textContent = 'Clock In';
+                clockButton.className = 'bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform transition hover:scale-105 focus:outline-none focus:shadow-outline';
+                currentStatus.textContent = 'Not Clocked In';
+                currentStatus.className = 'text-xl font-bold text-gray-800 dark:text-white text-gray-600 dark:text-gray-400';
+            }
+        }
+
+        function handleClockAction() {
+            const now = new Date();
+            const currentDate = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+
+            if (isClockedIn) {
+                // Clock out
+                // Find the pending entry and update it
+                const pendingEntryIndex = currentUser.timeEntries.findIndex(entry => entry.clockOut === null);
+                if (pendingEntryIndex !== -1) {
+                    currentUser.timeEntries[pendingEntryIndex].clockOut = currentTime;
+                    currentUser.timeEntries[pendingEntryIndex].status = 'Completed';
+
+                    // Update last action display
+                    lastActionTime.textContent = `Last action: Clocked out at ${currentDate} ${currentTime}`;
+                }
+            } else {
+                // Clock in - add new entry
+                currentUser.timeEntries.push({
+                    date: currentDate,
+                    clockIn: currentTime,
+                    clockOut: null,
+                    status: 'Pending'
+                });
+
+                // Update last action display
+                lastActionTime.textContent = `Last action: Clocked in at ${currentDate} ${currentTime}`;
+            }
+
+            isClockedIn = !isClockedIn;
+
+            // In a real app, you would send this to the server
+            // For this demo, we'll just update our mock database
+            employeesDatabase[currentUser.id] = currentUser;
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            updateClockButtonState();
+            updateTimeEntriesTable();
+        }
+
+        function updateTimeEntriesTable() {
+            // Clear table first
+            timeEntriesTable.innerHTML = '';
+
+            // Add entries (showing most recent first)
+            const entriesToShow = [...currentUser.timeEntries].reverse().slice(0, 5);
+
+            entriesToShow.forEach(entry => {
+                const row = document.createElement('tr');
+                row.className = 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700';
+
+                const calculateHours = () => {
+                    if (!entry.clockOut) return '';
+                    const clockInTime = new Date(`${entry.date}T${entry.clockIn}`);
+                    const clockOutTime = new Date(`${entry.date}T${entry.clockOut}`);
+                    const diffHours = (clockOutTime - clockInTime) / (1000 * 60 * 60);
+                    return diffHours.toFixed(1);
+                };
+
+                row.innerHTML = `
+                        <td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">${entry.date}</td>
+                        <td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">${entry.clockIn}</td>
+                        <td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">${entry.clockOut || '—'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">${calculateHours()}</td>
+                        <td class="py-3 px-4 text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                ${entry.status === 'Completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'}">
+                                ${entry.status}
+                            </span>
+                        </td>
+                    `;
+
+                timeEntriesTable.appendChild(row);
+            });
+        }
+
+        function handleLogout() {
+            // Clear session
+            sessionStorage.removeItem('currentUser');
+            currentUser = null;
+
+            // Show login, hide time tracking
+            loginSection.classList.remove('hidden');
+            timeTrackingSection.classList.add('hidden');
+            logoutSection.classList.add('hidden');
+
+            // Reset form
+            loginForm.reset();
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        }
+    </script>
+</body>
+</html>
+
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+
+</body>
+</html>
+
+
+
